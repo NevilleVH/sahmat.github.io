@@ -25,6 +25,7 @@ const openingSchema = z.object({
 })
 const parsed = openingSchema.array().parse(openings)
 export type Opening = z.output<typeof openingSchema>
+export type Move = Opening["uci"][number]
 
 export const ecoCodes = parsed.map(o => o.eco)
 export const byEco = new Map(parsed.map(o => [o.eco, o]))

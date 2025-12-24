@@ -1,31 +1,47 @@
 <script lang="ts">
-	import { type Board, dimension, newBoard, pieceImgs, type Piece, type Colour } from '$lib/pieces';
-	import { byEco, type Opening, ecoCodes } from '$lib/openings';
+	import {
+		type Board,
+		dimension,
+		newBoard,
+		pieceImgs,
+		type Piece,
+		type Colour,
+		posEq
+	} from '$lib/pieces';
+	import { byEco, type Move, ecoCodes } from '$lib/openings';
 	let board = $state<Board>(newBoard());
 
 	let turn = $state<Colour>('white');
 	let selectedPiece = $state<Piece>();
 	let possibleMoves = $derived(selectedPiece?.possibleMoves(board));
 	// TODO: make move then show possible opening continuations/name
-	let selectedCode = $state(ecoCodes[0])
+	let selectedCode = $state(ecoCodes[0]);
 	let selectedOpening = $derived(byEco.get(selectedCode));
 	let moveIdx = $state(-1);
+	let currentMove = $derived(selectedOpening?.uci[moveIdx]);
+	function applyMove(move: Move) {
+		const { start, end } = move;
+		board[end.row][end.col] = board[start.row][start.col];
+		board[start.row][start.col] = null;
+	}
 </script>
 
 <div style="display:flex; flex-direction:column; height:80vh">
 	<div style="display:flex; flex-direction:column; align-items:center">
-		<label for="opening-search"
-			>Search for an opening:
-			
-		</label>
-		<input id="opening-search" oninput={ev => {
-			const code = ev.currentTarget.value
-						console.log(code)
+		<label for="opening-search">Search for an opening: </label>
+		<input
+			id="opening-search"
+			oninput={(ev) => {
+				const code = ev.currentTarget.value;
+				console.log(code);
 
-			if (byEco.get(code)) {
-				selectedCode = code
-			}
-		}} style:width="100%" list="openings" />
+				if (byEco.get(code)) {
+					selectedCode = code;
+				}
+			}}
+			style:width="100%"
+			list="openings"
+		/>
 
 		<datalist id="openings">
 			{#each byEco as [eco, { name }]}
@@ -51,16 +67,24 @@
 		</select>
 	</div>
 	<div style="display: flex; justify-content:center; gap:4px; margin:4px 0px">
-		<button disabled={moveIdx < 0} onclick={() => moveIdx--}>Prev</button>
+		<button
+			disabled={moveIdx < 0}
+			onclick={() => {
+				const move = selectedOpening?.uci.at(moveIdx);
+				if (!move) return;
+				// TODO: just reverse the last move but keep track of taken pieces
+				board = newBoard();
+				selectedOpening?.uci.slice(0, moveIdx).forEach(applyMove);
+				moveIdx--;
+			}}>Prev</button
+		>
 		<button
 			disabled={!selectedOpening || moveIdx >= selectedOpening.uci.length - 1}
 			onclick={() => {
 				moveIdx++;
 				const move = selectedOpening?.uci.at(moveIdx);
 				if (!move) return;
-				const { start, end } = move;
-				board[end.row][end.col] = board[start.row][start.col];
-				board[start.row][start.col] = null;
+				applyMove(move);
 			}}>Next</button
 		>
 	</div>
@@ -82,6 +106,10 @@
 					<div class="square">
 						<button
 							style="height:100%;width:100%"
+							style:border-color={currentMove &&
+							(posEq(currentMove.start, { row, col }) || posEq(currentMove.end, { row, col }))
+								? 'chartreuse'
+								: 'transparent'}
 							style:background={possibleMoves?.find((p) => p.col === col && p.row === row)
 								? 'lime'
 								: (row + col) % 2 === 0

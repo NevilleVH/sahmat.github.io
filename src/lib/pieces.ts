@@ -50,6 +50,10 @@ const add = R.curry((p1: Position, p2: Position): Position  => {
     return {row: p1.row + p2.row, col: p1.col + p2.col}
 })
 
+export function posEq(p1: Position, p2: Position) {
+    return p1.col === p2.col && p1.row === p2.row
+}
+
 // export function pieceImg(p: Piece) {
 //     R.cond([
 //         [R.is(Pawn), R.always(imgPawn)],
@@ -231,7 +235,7 @@ export class Castle extends Piece {
 
     _possibleMoves(board: Board): Position[] {
         const positions: Position[] = []
-        
+
         for (let d of [-1, 1]) {
             positions.push(...takeUntilPiece(this.position, {row: 0, col: d}, board))
             positions.push(...takeUntilPiece(this.position, {row: d, col:0}, board))

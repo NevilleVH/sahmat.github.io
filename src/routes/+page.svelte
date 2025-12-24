@@ -7,13 +7,35 @@
 	let selectedPiece = $state<Piece>();
 	let possibleMoves = $derived(selectedPiece?.possibleMoves(board));
 	// TODO: make move then show possible opening continuations/name
-	let selectedOpening = $state<Opening | undefined>(byEco.get(ecoCodes[0]));
+	let selectedCode = $state(ecoCodes[0])
+	let selectedOpening = $derived(byEco.get(selectedCode));
 	let moveIdx = $state(-1);
 </script>
 
 <div style="display:flex; flex-direction:column; height:80vh">
-	<div>
-		<select style:width="100%"
+	<div style="display:flex; flex-direction:column; align-items:center">
+		<label for="opening-search"
+			>Search for an opening:
+			
+		</label>
+		<input id="opening-search" oninput={ev => {
+			const code = ev.currentTarget.value
+						console.log(code)
+
+			if (byEco.get(code)) {
+				selectedCode = code
+			}
+		}} style:width="100%" list="openings" />
+
+		<datalist id="openings">
+			{#each byEco as [eco, { name }]}
+				<option value={eco}>{eco} {name}</option>
+			{/each}
+		</datalist>
+
+		<select
+			style:width="100%"
+			value={selectedCode}
 			onchange={({ currentTarget }) => {
 				const opening = byEco.get(currentTarget.value);
 				if (opening) {

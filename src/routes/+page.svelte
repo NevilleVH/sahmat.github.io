@@ -25,7 +25,7 @@
 	const includes = R.on(R.includes, R.toLower);
 	let filteredEcos = $derived(
 		openings.filter(({ name, eco }) => {
-			return includes(codeFilter, eco) && includes(nameFilter, name)
+			return includes(codeFilter, eco) && includes(nameFilter, name);
 		})
 	);
 
@@ -39,7 +39,7 @@
 <div id="app-container">
 	<div style="display:flex; flex-direction:column; align-items:center">
 		<div>
-			<div  style="text-align: center; margin-bottom: 8px; display:flex; flex-direction:column">
+			<div style="text-align: center; margin-bottom: 8px; display:flex; flex-direction:column">
 				<label>
 					Filter code:
 					<input
@@ -59,14 +59,22 @@
 			</div>
 			<div id="opening-select">
 				{#each filteredEcos as opening}
-					<button style:background={R.equals(opening, selectedOpening) ? 'lightblue' : 'aliceblue'} style="border: 1px solid;" onclick={() => (selectedOpening = opening)}>{opening.eco} {opening.name}</button>
+					<button
+						style:background={R.equals(opening, selectedOpening) ? 'lightblue' : 'aliceblue'}
+						style="border: 1px solid;"
+						onclick={() => {
+							selectedOpening = opening;
+							board = newBoard();
+							moveIdx = -1;
+						}}>{opening.eco} {opening.name}</button
+					>
 				{/each}
 			</div>
 			<div>
 				<div style="text-align: center; margin-top: 8px">
 					<strong>
-					Selected: {selectedOpening.eco}
-					{selectedOpening.name}<br>{selectedOpening.pgn}
+						Selected: {selectedOpening.eco}
+						{selectedOpening.name}<br />{selectedOpening.pgn}
 					</strong>
 				</div>
 			</div>
@@ -115,7 +123,7 @@
 							}}
 						>
 							{#if piece}
-								<img height="100%" width="100%" src={pieceImgs[piece.colour][piece.tag]} />
+								<img style="object-fit: cover;" height="100%" width="100%" src={pieceImgs[piece.colour][piece.tag]} />
 							{/if}
 						</button>
 					</div>
@@ -172,5 +180,6 @@
 		overflow-y: scroll;
 		display: flex;
 		flex-direction: column;
+		border: 1px solid black;
 	}
 </style>
